@@ -5,60 +5,62 @@
 
 final class TSqlSelect extends TSqlInstruction {
 
-    private $columns; // array de colunas a serem retornadas.
+    private $columns = []; // array de colunas a serem retornadas.
 
-    /*Método addColumn
-    * adiciona uma coluna a ser retornada pelo SELECT
+    /* Método addColumn
+    * Adiciona uma coluna a ser retornada pelo SELECT
     * @param $column = coluna da tabela
     */
-
-    public function addColumn($column){
+    public function addColumn($column) {
         $this->columns[] = $column;
     }
-    /* método getInstruction()
-    * retorna a instrução de SELECT em forma de string
+
+    /* Método getInstruction()
+    * Retorna a instrução de SELECT em forma de string
     */
+    public function getInstruction() {
+        // Verifica se há colunas a serem retornadas
+        if (empty($this->columns)) {
+            throw new Exception("Nenhuma coluna foi adicionada ao SELECT.");
+        }
 
-    public function getInstruction()
-    {
-        // monta a instrução SQL
+        // Monta a instrução SQL inicial
+        $this->sql = 'SELECT ';
 
-        $this->sql = 'SELECT';
+        // Monta a string com os nomes das colunas
+        $this->sql .= implode(', ', $this->columns);
 
-        //monta string com os nomes das colunas 
-        $this->sql .= implode(',',$this->columns);
+        // Adiciona na cláusula FROM o nome da tabela
+        $this->sql .= ' FROM ' . $this->entity;
 
-        //adiciona na clausula FROM o nome da tabela
-        $this->sql .='FROM' . $this->entity;
-
-        //obtem a clausula where do objeto criteria
-        if($this->criteria){
+        // Obtém a cláusula WHERE do objeto criteria
+        if ($this->criteria) {
             $expression = $this->criteria->dump();
-            if($expression){
-                $this->sql .='WHERE' . $expression;
+            if ($expression) {
+                $this->sql .= ' WHERE ' . $expression;
             }
 
-            //obtem as propriedades do critério
-
+            // Obtém as propriedades do critério
             $order = $this->criteria->getProperty('order');
             $limit = $this->criteria->getProperty('limit');
             $offset = $this->criteria->getProperty('offset');
 
-            // obtem a ordenação do SELECT
-
-            if($order){
-                $this->sql.= 'ORDER BY'.$order;
+            // Adiciona a ordenação do SELECT
+            if ($order) {
+                $this->sql .= ' ORDER BY ' . $order;
             }
-            if($limit){
-                $this->sql .= 'LIMIT'.$limit;
+            // Adiciona o limite de registros
+            if ($limit) {
+                $this->sql .= ' LIMIT ' . $limit;
             }
-            if($offset){    
-                $this->sql .= 'OFFSET'.$offset;
+            // Adiciona o offset (deslocamento)
+            if ($offset) {
+                $this->sql .= ' OFFSET ' . $offset;
+            }
         }
-    }
-    return $this->sql;
-}
 
+        return $this->sql;
+    }
 }
 
 ?>
