@@ -6,6 +6,7 @@
 
 final class TTransaction{
     private static $conn; //conexão ativa
+    private static $logger;
 /*método __construct()
 *Está declarado como private para impedor que se crie instancias de TTransaction
 */
@@ -20,6 +21,8 @@ private function __construct(){}
         //abre uma conexão no banco de dados e armazena na propriedade estatica $conn
         if(empty(self::$conn)){
             self::$conn = TConnection::open($database);
+            //desliga o log do SQL
+            self::$logger = NULL;
         }
     }
 
@@ -44,6 +47,25 @@ private function __construct(){}
         self::$conn = null;
         }
     }
+    /*método setLogger()
+    *define a estrategia (algoritmo do log a ser utilizado)
+    */
+
+    public static function setLogger(TLogger $logger){
+        self::$logger = $logger;
+    }
+    /*Método Log
+    *armazena uma mensagem no arquivo de LOG
+    *baseada na estrategia ($logger) atual
+    */
+
+    public static function log($message){
+    //verifica se existe um Logger
+    if(self::$logger){
+        self::$logger->write($message);
+    }
+    }
+
     /*Método close()
     *aplica todas as operações realizadas e fecha a transação
     */
